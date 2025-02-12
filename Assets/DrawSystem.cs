@@ -1,7 +1,7 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class DrawSystem : MonoBehaviour
 {
@@ -17,17 +17,21 @@ public class DrawSystem : MonoBehaviour
     [SerializeField] private int _resolutionY;
     private int _oldX = 0;
     private int _oldY = 0;
-    public List<Vector2> _Coords = new List<Vector2>(10000);
+    private List<Vector2> _Coords = new List<Vector2>(10000);
     private List<Color> _Colors = new List<Color>(10000);
+    private Vector2 Lastpixel;
+
     public List<List<Vector2>> _UndoLists = new List<List<Vector2>>(10000);
     public List<List<Color>> _ColorUndo = new List<List<Color>>();
     public List<List<Vector2>> _RedoLists = new List<List<Vector2>>(10000);
     public List<List<Color>> _ColorRedo = new List<List<Color>>();
     public Color color;
-    public int BrushSize = 10;
+    public int BrushSize;
     public string DrawType;
     RaycastHit hit;
     Ray ray;
+    float r2, x2, y2;
+    Color OldColor, newColor;
 
     void Start()
     {
@@ -37,42 +41,44 @@ public class DrawSystem : MonoBehaviour
         _texture.wrapMode = TextureWrapMode.Clamp;
         _texture.filterMode = FilterMode.Bilinear;
         _Collider = GetComponent<Collider>();
-        for (int x = 0; x <= _resolutionX; x++)
+        for (int x = 0; x < _resolutionX; x++)
         {
-            for (int y = 0; y <= _resolutionY; y++)
+            for (int y = 0; y < _resolutionY; y++)
             {
+
                 _texture.SetPixel(x, y, Color.white);
+
             }
-        }
+        }        
         _texture.Apply();
+        Reload();
     }
 
 
 
-    void Update()
+    void FixedUpdate()
     {
         
         if (Input.touchCount == 1)
         {
             _touch = Input.GetTouch(0);
             ray = _camera.ScreenPointToRay(_touch.position);
-            if (_Collider.Raycast(ray, out hit, 10000))
+            if(_Collider.Raycast(ray, out hit, Mathf.Infinity))
             {
+                
                 int rayX = (int)(hit.textureCoord.x * _resolutionX);
                 int rayY = (int)(hit.textureCoord.y * _resolutionY);
-                if (_oldX != rayX | _oldY != rayY)
+                Debug.Log(111);   
+                if (DrawType == "Circle")
                 {
-
-                    if (DrawType == "Circle")
-                    {
-                        DrawCircle(rayX, rayY);
-                    }
-                    else if (DrawType == "Eraser")
-                    {
-                        Erase(rayX, rayY);
-                    }
+                    DrawCircle(rayX, rayY);
+                }
+                else if (DrawType == "Eraser")
+                {
+                    Erase(rayX, rayY);
                 }
             }
+                
         }
         else
         {
@@ -90,35 +96,56 @@ public class DrawSystem : MonoBehaviour
     
     void DrawCircle(int rayX, int rayY)
     {
-        float r2 = Mathf.Pow(BrushSize / 2 - 0.5f, 2);
-        for (int x = 0; x < BrushSize; x++)
+        if (Lastpixel != null)
         {
-            float x2 = Mathf.Pow(x - BrushSize / 2, 2);
-            for (int y = 0; y < BrushSize; y++)
+            if (new Vector2(rayX, rayY) != Lastpixel)
             {
-                float y2 = Mathf.Pow(y - BrushSize / 2, 2);
-                if (_Coords.Contains(new Vector2(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2)) == false)
+                for (int x = 0; x < BrushSize; x++)
                 {
+                    x2 = Mathf.Pow(x - BrushSize / 2, 2);
+                    for (int y = 0; y < BrushSize; y++)
+                    {
+                        y2 = Mathf.Pow(y - BrushSize / 2, 2);
+                        if (rayX + x - BrushSize / 2 >= 0 && rayX + x - BrushSize / 2 < _resolutionX && rayY + y - BrushSize / 2 >= 0 && rayY + y - BrushSize / 2 < _resolutionY)
+                        {
+                            if (x2 + y2 < r2)
+                            {
+                                OldColor = _texture.GetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2);
+                                newColor = Color.Lerp(OldColor, color, color.a);
+                                _texture.SetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2, newColor);
+                                _Coords.Add(new Vector2(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2));
+                                _Colors.Add(OldColor);
+                                Lastpixel = new Vector2(rayX, rayY);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (int x = 0; x < BrushSize; x++)
+            {
+                x2 = Mathf.Pow(x - BrushSize / 2, 2);
+                for (int y = 0; y < BrushSize; y++)
+                {
+                    y2 = Mathf.Pow(y - BrushSize / 2, 2);
                     if (rayX + x - BrushSize / 2 >= 0 && rayX + x - BrushSize / 2 < _resolutionX && rayY + y - BrushSize / 2 >= 0 && rayY + y - BrushSize / 2 < _resolutionY)
                     {
                         if (x2 + y2 < r2)
                         {
-                            Color OldColor = _texture.GetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2);
-                            Color newColor = Color.Lerp(OldColor, color, color.a);
+                            OldColor = _texture.GetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2);
+                            newColor = Color.Lerp(OldColor, color, color.a);
                             _texture.SetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2, newColor);
                             _Coords.Add(new Vector2(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2));
                             _Colors.Add(OldColor);
+                            Lastpixel = new Vector2(rayX, rayY);
                         }
                     }
-
                 }
-
             }
         }
-
-        rayX = _oldX;
-        rayY = _oldY;
-        _texture.Apply();
+        _texture.Apply(false);
     }
     void Erase(int rayX, int rayY)
     {
@@ -141,6 +168,7 @@ public class DrawSystem : MonoBehaviour
     {
         BrushSize = (int)slider.value;
         BrSizetext.text = "Размер: " + BrushSize.ToString();
+        r2 = Mathf.Pow(BrushSize / 2 - 0.5f, 2);
     }
     public void Undo()
     {

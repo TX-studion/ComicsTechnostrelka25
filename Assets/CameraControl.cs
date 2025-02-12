@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using UnityEditor.Rendering;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class CameraControl : MonoBehaviour
 {
@@ -69,21 +68,21 @@ public class CameraControl : MonoBehaviour
                 Vector3 Dir = Camera.main.ScreenToWorldPoint(_firstT.position) - Camera.main.ScreenToWorldPoint(_firstT_direction);
 
                 _camera.transform.position -= Dir.normalized * Time.deltaTime * moveSpeed;
-                if (_camera.transform.position.x < -30)
+                if (_camera.transform.position.x < -35)
                 {
-                    _camera.transform.position = new Vector3(-30, transform.position.y, 0);
+                    _camera.transform.position = new Vector3(-35, transform.position.y, -100);
                 }
-                if (_camera.transform.position.x > 30)
+                if (_camera.transform.position.x > 35)
                 {
-                    _camera.transform.position = new Vector3(30, transform.position.y, 0);
+                    _camera.transform.position = new Vector3(35, transform.position.y, -100);
                 }
-                if (_camera.transform.position.y < -30)
+                if (_camera.transform.position.y < -35)
                 {
-                    _camera.transform.position = new Vector3(transform.position.x, -30, 0);
+                    _camera.transform.position = new Vector3(transform.position.x, -35, -100);
                 }
-                if (_camera.transform.position.y > 30)
+                if (_camera.transform.position.y > 35)
                 {
-                    _camera.transform.position = new Vector3(transform.position.x, 30, 0);
+                    _camera.transform.position = new Vector3(transform.position.x, 35, -100);
                 }
             }
 
