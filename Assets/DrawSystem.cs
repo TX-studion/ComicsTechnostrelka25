@@ -88,6 +88,7 @@ public class DrawSystem : MonoBehaviour
                 _Coords.Clear();
                 _ColorUndo.Add(_Colors);
                 _Colors.Clear();
+                Lastpixel = null;
             }
         }
     }
@@ -116,11 +117,40 @@ public class DrawSystem : MonoBehaviour
                                 _Coords.Add(new Vector2(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2));
                                 _Colors.Add(OldColor);
                                 Lastpixel = new Vector2(rayX, rayY);
+                                
                             }
                         }
                     }
                 }
+                int deltaX = math.abs(rayX - _oldX);
+                int deltaY = math.abs(rayY - _oldY);
+                float error = 0;
+                float direrr = (deltaY + 1) / (deltaX + 1);
+                int dirY = rayY - _oldY;
+                int y = _oldX;
+                if (dirY < 0)
+                {
+                    dirY = -1;
+                }
+                if (diry > 0)
+                {
+                    dirY = 1;
+                }
+                if (_oldX > rayX)
+                {
+                    for (int x = rayX; x < _oldX; x++)
+                    {
+
+                    }
+                }
+                else if (_oldX < rayX)
+                {
+                    for (int x = _oldX; x < rayX; x++)
+                }
+
+
             }
+
         }
         else
         {
@@ -140,6 +170,8 @@ public class DrawSystem : MonoBehaviour
                             _Coords.Add(new Vector2(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2));
                             _Colors.Add(OldColor);
                             Lastpixel = new Vector2(rayX, rayY);
+                            _oldX = rayX;
+                            _oldY = rayY;
                         }
                     }
                 }
