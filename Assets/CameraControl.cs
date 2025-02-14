@@ -67,7 +67,7 @@ public class CameraControl : MonoBehaviour
             {
                 Vector3 Dir = Camera.main.ScreenToWorldPoint(_firstT.position) - Camera.main.ScreenToWorldPoint(_firstT_direction);
 
-                _camera.transform.position -= Dir.normalized * Time.deltaTime * moveSpeed;
+                _camera.transform.position -= Dir.normalized * Time.deltaTime * moveSpeed * _camera.orthographicSize;
                 if (_camera.transform.position.x < -35)
                 {
                     _camera.transform.position = new Vector3(-35, transform.position.y, -100);

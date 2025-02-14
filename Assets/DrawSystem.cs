@@ -71,8 +71,8 @@ public class DrawSystem : MonoBehaviour
             }
             
 
-           obj.transform.position = Vector3.MoveTowards(obj.transform.position, _camera.ScreenToWorldPoint(_touch.position), step * BrushSize / 4);
-            
+            obj.transform.position = Vector3.MoveTowards(obj.transform.position, _camera.ScreenToWorldPoint(_touch.position), step * BrushSize / 4);
+            Debug.Log(_touch.position); 
         }
         else
         {
@@ -88,7 +88,7 @@ public class DrawSystem : MonoBehaviour
         if (Input.touchCount == 1)
         {
             
-            if(Physics.Raycast(obj.transform.position,Vector3.forward, out hit, Mathf.Infinity))
+            if(Physics.Raycast(obj.transform.position,Vector3.forward, out hit, Mathf.Infinity) && _camera.WorldToScreenPoint(obj.transform.position).y < 1300 && _camera.WorldToScreenPoint(obj.transform.position).y > 320)
             {
                 obj.gameObject.SetActive(true);
                 int rayX = (int)(hit.textureCoord.x * _resolutionX);
@@ -96,7 +96,7 @@ public class DrawSystem : MonoBehaviour
                 Debug.Log(111);   
                 if (DrawType == "Circle")
                 {
-                    DrawCircle(rayX, rayY);
+                    DrawCircle(rayX, rayY, color);
                 }
                 else if (DrawType == "Eraser")
                 {
@@ -141,7 +141,7 @@ public class DrawSystem : MonoBehaviour
             for (int x = _oldX; x > rayX; x--)
             {
                 Debug.Log(x + " " + y);
-                DrawCircle(x, y);
+                DrawCircle(x, y, color);
                 error = error + deltaerr;
                 if (error >= 1.0f)
                 {
@@ -155,7 +155,7 @@ public class DrawSystem : MonoBehaviour
         {
             for (int x = _oldX; x < rayX; x++)
             {
-                DrawCircle(x, y);
+                DrawCircle(x, y, color);
                 error = error + deltaerr;
                 if (error >= 1.0f) 
                 {
@@ -166,8 +166,15 @@ public class DrawSystem : MonoBehaviour
                 
         }
     }
+    void BucketFill(int rayX, int rayY)
+    {
+        Color FillColor = _texture.GetPixel(rayX, rayY);
+
+
+
+    }
     
-    void DrawCircle(int rayX, int rayY)
+    void DrawCircle(int rayX, int rayY, Color color)
     {
         if (Lastpixel != new Vector2(1000, 1000))
         {
@@ -184,12 +191,18 @@ public class DrawSystem : MonoBehaviour
                             if (x2 + y2 < r2)
                             {
                                 OldColor = _texture.GetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2);
-                                newColor = Color.Lerp(OldColor, color, color.a);
-                                _texture.SetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2, newColor);
-                                _Coords.Add(new Vector2(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2));
-                                _Colors.Add(OldColor);
-                                Lastpixel = new Vector2(rayX, rayY);
-                                
+                                if (color.a != 1)
+                                {
+                                    newColor = Color.Lerp(OldColor, color, color.a);
+                                    _texture.SetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2, newColor);
+                                }
+                                else
+                                {
+                                    _texture.SetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2, color);
+                                }
+
+
+
                             }
                         }
                     }
@@ -224,6 +237,9 @@ public class DrawSystem : MonoBehaviour
                 }
             }
         }
+        _Coords.Add(new Vector2(rayX, rayY));
+        _Colors.Add(OldColor);
+        Lastpixel = new Vector2(rayX, rayY);
         _texture.Apply(false);
     }
     void Erase(int rayX, int rayY)
@@ -267,7 +283,7 @@ public class DrawSystem : MonoBehaviour
             _ColorUndo.RemoveAt(_ColorUndo.Count - 1);
             for(int i = 0; i < toUndo.Count - 1; i++) 
             {
-                _texture.SetPixel((int)toUndo[i].x, (int)toUndo[i].y, toUndoColors[i]);
+
             }
             _ColorRedo.Add(toUndoColors);
             _RedoLists.Add(toUndo);
