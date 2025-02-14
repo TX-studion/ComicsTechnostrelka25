@@ -19,10 +19,12 @@ public class BtnHelper : MonoBehaviour
     {
         if (obj.activeSelf)
         {
+            ds.CanDraw = true;
             obj.SetActive(false);
         }
         else
         {
+            ds.CanDraw = false;
             obj.SetActive(true);
         }
 

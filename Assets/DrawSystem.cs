@@ -35,6 +35,7 @@ public class DrawSystem : MonoBehaviour
     private GameObject cursor;
     RaycastHit hit;
     Ray ray;
+    public bool CanDraw;
     float r2, x2, y2;
     Color OldColor, newColor;
 
@@ -61,7 +62,7 @@ public class DrawSystem : MonoBehaviour
     void Update()
     {
        
-        if (Input.touchCount == 1)
+        if (Input.touchCount == 1 && CanDraw == true)
         {
             _touch = Input.GetTouch(0);
             if(_touch.phase == TouchPhase.Began)
@@ -72,7 +73,6 @@ public class DrawSystem : MonoBehaviour
             
 
             obj.transform.position = Vector3.MoveTowards(obj.transform.position, _camera.ScreenToWorldPoint(_touch.position), step * BrushSize / 4);
-            Debug.Log(_touch.position); 
         }
         else
         {
@@ -92,8 +92,7 @@ public class DrawSystem : MonoBehaviour
             {
                 obj.gameObject.SetActive(true);
                 int rayX = (int)(hit.textureCoord.x * _resolutionX);
-                int rayY = (int)(hit.textureCoord.y * _resolutionY);
-                Debug.Log(111);   
+                int rayY = (int)(hit.textureCoord.y * _resolutionY);  
                 if (DrawType == "Circle")
                 {
                     DrawCircle(rayX, rayY, color);
@@ -267,6 +266,7 @@ public class DrawSystem : MonoBehaviour
     }
     public void Reload()
     {
+
         BrushSize = (int)slider.value;
         BrSizetext.text = "Размер: " + BrushSize.ToString();
         r2 = Mathf.Pow(BrushSize / 2 - 0.5f, 2);
@@ -283,7 +283,6 @@ public class DrawSystem : MonoBehaviour
             _ColorUndo.RemoveAt(_ColorUndo.Count - 1);
             for(int i = 0; i < toUndo.Count - 1; i++) 
             {
-
             }
             _ColorRedo.Add(toUndoColors);
             _RedoLists.Add(toUndo);
