@@ -3,6 +3,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.IO;
 
 public class DrawSystem : MonoBehaviour
 {
@@ -199,6 +200,9 @@ public class DrawSystem : MonoBehaviour
                                 {
                                     _texture.SetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2, color);
                                 }
+                                _Coords.Add(new Vector2(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2));
+                                _Colors.Add(OldColor);
+
 
 
 
@@ -229,15 +233,13 @@ public class DrawSystem : MonoBehaviour
                             _texture.SetPixel(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2, newColor);
                             _Coords.Add(new Vector2(rayX + x - BrushSize / 2, rayY + y - BrushSize / 2));
                             _Colors.Add(OldColor);
-                            Lastpixel = new Vector2(rayX, rayY);
 
                         }
                     }
                 }
             }
         }
-        _Coords.Add(new Vector2(rayX, rayY));
-        _Colors.Add(OldColor);
+
         Lastpixel = new Vector2(rayX, rayY);
         _texture.Apply(false);
     }
@@ -283,6 +285,7 @@ public class DrawSystem : MonoBehaviour
             _ColorUndo.RemoveAt(_ColorUndo.Count - 1);
             for(int i = 0; i < toUndo.Count - 1; i++) 
             {
+                _texture.SetPixel((int)toUndo[i].x, (int)toUndo[i].y, toUndoColors[i]);
             }
             _ColorRedo.Add(toUndoColors);
             _RedoLists.Add(toUndo);
@@ -311,6 +314,17 @@ public class DrawSystem : MonoBehaviour
     {
         DrawType = gameObject.name;
     }
+    public void Save()
+    {
+            
+        _texture.name = "test";
+        // Read screen contents into the texture
+        byte[] bytes = _texture.EncodeToPNG();
 
+        // For testing purposes, also write to a file in the project folder
+        File.WriteAllBytes(Application.dataPath + "SavedScreen1.png", bytes);
+
+
+    }
     
 }
